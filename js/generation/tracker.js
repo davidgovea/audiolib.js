@@ -17,10 +17,12 @@ function Tracker(sampleRate, channelCount, noteLength, noteCallback){
 
 Tracker.prototype = {
 	
+	_over: new Float32Array(len),
 	_p: 0,
 	
 	generate: function(){
-		(this._p += 1) === this.len && this.notes.shift() && (this._p = 0);
+		var self = this;
+		(self._p += 1) === self.len && (self.mixBuffer(notes.shift().splice(_p), self._over)) && (self._p = 0);
 	},
 	
 	getMix: function(){
@@ -31,16 +33,59 @@ Tracker.prototype = {
 /**
  * Adds a Note to be played by the Tracker
 */
-	addNote: function(generateNote){
-		var self = this,
-			l = self.len,
-			note = new Float32Array(l),
+	addNotes: function(generateVoice /*, generateVoice2, 3, ... */){
+		var args = Array.prototype.slice.call(arguments, 0);			
+		this.asyncNote(args);
+	},
+	
+	asyncNote: function(generatorArray){
+		//Generate 1 note buffer, non-blocking loop
+	},
+	
+	mix: function(sample1, sample2){
+		//Mix together 2 or more samples
+		var mixed, lesser, sum, extraArgs, argLength = arguments.length;
+		
+		if(sample1 > 0){
+			if(sample2 > 0){
+				console.log('1');
+				mixed = sample1 + sample2 - sample1*sample2;
+			} else {
+				console.log('2');
+				sum = sample1 + sample2;
+				lesser = (sum < 0) ? sample1 : -sample2;
+				mixed = (sample1 + sample2)*(1 + lesser);
+			}
+		} else {
+			if (sample2 < 0){
+				console.log('3');
+				mixed = sample1 + sample2 + sample1*sample2;
+			} else {
+				console.log('4');
+				sum = sample1 + sample2;
+				lesser = (sum > 0) ? -sample1 : sample2;
+				mixed = (sample1 + sample2)*(1 + lesser);
+			}
+		}
+		
+		
+		if(argLength > 2){
+			extraArgs = Array.prototype.slice.call(arguments, 2);
+			extraArgs.unshift(mixed);
+			mixed = this.mix.apply(this, extraArgs);
+		}
+		
+		return mixed;
+	},
+	
+	mixBuffer: function(sourceBuffer, destBuffer){
+		//Mix sourceBuffer into destBuffer
+		var l = sourceBuffer.length,
 			i;
 			
-		for (i=0; i<l; i++){
-			note[i] = generateNote(self.sampleRate); //Double-generation? Here and in generate()?
-			//maybe store generateNote instead of buffer? sounds better
+		for(i = 0; i < l; i++ ){
+			destBuffer[i] = this.mix(sourceBuffer[i], destBuffer[i]);
 		}
-		self.notes.push(note);
-	},
+		
+	}
 }
