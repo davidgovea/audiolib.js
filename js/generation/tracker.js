@@ -38,7 +38,8 @@ Tracker.prototype = {
 			i;
 			
 		for (i=0; i<l; i++){
-			note[i] = generateNote(self.sampleRate);
+			note[i] = generateNote(self.sampleRate); //Double-generation? Here and in generate()?
+			//maybe store generateNote instead of buffer? sounds better
 		}
 		self.notes.push(note);
 	},
