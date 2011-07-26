@@ -2,7 +2,6 @@
 <html>
     <head>
         <script src="../lib/audiolib.js"></script>
-        <script src="../js/generation/tracker.js"></script>
         <script src="../js/effects/extra.js"></script>
         <script>
 (function(){
@@ -119,7 +118,7 @@ window.onload = function(){
                 <li>Signal capped with <em>audioLib.Capper</em> in <span style="color:red;">Red</span></li>
                 <li>Signal compressed with <em>audioLib.Compressor</em> (scale by 2, standard gain=0.5) in <span style="color:blue;">Blue</span></li>
             </ul>
-            audioLib.Compressor clips the waveform, smooths the hard corners, and boosts lower volume levels
+            audioLib.Compressor scales the waveform and boosts lower volume levels without hard corners
         </p>
         <canvas id=c width=1000 height=420></canvas>
     </body>
