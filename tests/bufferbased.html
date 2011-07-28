@@ -4,32 +4,42 @@
 		<script src="../lib/audiolib.js"></script>
 		<script>
 (function(){
+function Float32Concat(first, second)
+{
+    var firstLength = first.length;
+    var result = new Float32Array(firstLength + second.length);
+
+    result.set(first);
+    result.set(second, firstLength);
+
+    return result;
+}
 
 var	
 	osc, lfo,
-	dev, sampleRate, fx, filter, buf;
+	dev, sampleRate, fx, filter, buf, buf2;
 
 window.onload	= function(){
 	setTimeout(function(){
 		dev		= audioLib.AudioDevice(null, 2);
 		sampleRate	= dev.sampleRate;
-		buf		= new Float32Array(sampleRate * 8);
-		for (var i=0; i<sampleRate * 2; i+=2){
-			buf[i] = buf[i+1] = (Math.random() * 2 - 1) * 0.5;
-		}
-		fx = audioLib.Delay.createBufferBased(2, sampleRate);
-		fx.effects[1].feedback = 0.7;
-		fx.effects[0].feedback = 0.5;
-		fx.effects[1].time = 763;
-		filter = audioLib.LP12Filter.createBufferBased(2, sampleRate, 4000);
+		buf		= new Float32Array(40000);
+		osc = new audioLib.Oscillator(sampleRate, 440);
+		osc.append(buf,2);
+		buf2 = Float32Concat(buf, new Float32Array(sampleRate*10));
+		
+		fx = audioLib.Delay.createBufferBased(2, sampleRate, 260, 0.9);
+		fx.effects[1].time = 140;
+		filter = audioLib.LP12Filter.createBufferBased(2, sampleRate, 3000);
 		filter.effects[0].frequency = 8000;
 		filter.mix = 1;
-		fx.append( filter.append(buf) );
+		fx.append( filter.append( buf2));
 	}, 2000);
 };
 
 window.play	= function(){
-	dev.writeBuffer(buf);
+	dev.writeBuffer(buf2);
+	//console.log(buf2);
 }
 
 }());
