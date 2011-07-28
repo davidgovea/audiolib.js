@@ -106,3 +106,19 @@ BiquadFilter.AllPass = function(sampleRate, f0, Q){
         a2      =  b0;
     return new audioLib.BiquadFilter(sampleRate, b0/a0, b1/a0, b2/a0, a1/a0, a2/a0);
 }
+
+//0db Peak Gain BPF
+BiquadFilter.BandPass = function(sampleRate, centerFreq, bandwidthInOctaves){
+    var w0      = 2* Math.PI*fc/sampleRate,
+        cosw0   = Math.cos(w0),
+        sinw0   = Math.sin(w0),
+        toSinh  = Math.log(2)/2 * bandWidthInOctaves * w0/sinw0,
+        alpha   = sinw0*(Math.exp(toSinh) - Math.exp(-toSinh))/2,
+        b0      =  alpha,
+        b1      =  0,
+        b2      = -alpha,
+        a0      =  1 + alpha,
+        a1      = -2*cos(w0),
+        a2      =  1 - alpha;
+    return new audioLib.BiquadFilter(sampleRate, b0/a0, b1/a0, b2/a0, a1/a0, a2/a0);
+}
