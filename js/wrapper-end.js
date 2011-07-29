@@ -105,13 +105,23 @@ GeneratorClass.prototype = {
 	type:	'generator',
 	source:	true,
 	mix:	1,
-	append: function(buffer, channelCount){
-		var	l	= buffer.length,
+	append: function(buffer, channelCount, addToExisting){
+		var	self  = this,
+		    l     = buffer.length,
+		    c     = channelCount || 1,
+			write = (function(){
+			    if(addToExisting){
+			        return function(pos){buffer[pos] += self.getMix() * self.mix};
+			    } else {
+			        return function(pos){buffer[pos]  = self.getMix() * self.mix};
+			    }
+			}()),
 			i, n;
-		for (i=0; i<l; i+=channelCount){
-			this.generate();
-			for (n=0; n<channelCount; n++){
-				buffer[i + n] = this.getMix(n) * this.mix;
+					
+		for (i=0; i<l; i+=c){
+			self.generate();
+			for (n=0; n<c; n++){
+				write(i+n);
 			}
 		}
 		return buffer;
