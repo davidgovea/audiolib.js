@@ -16,7 +16,7 @@ function fillBuffer(buffer, channelCount){
 	for (i=0; i<l; i+=channelCount){
 		tracker.generate();
 		//osc.generate(lfo.getMix() * 0.2);
-		smpl = tracker.getMix();
+		smpl = compressor.pushSample(tracker.getMix());
 		
 		for (n=0; n<channelCount; n++){
 			buffer[i + n] = smpl;
@@ -114,8 +114,24 @@ window.onload	= function(){
 		fx		=// (new audioLib.LP12Filter(sampleRate, 1000, 8));//.join(
 			//new audioLib.Delay(sampleRate, 3, 0.1);
 		//);
-		tracker = new audioLib.Tracker(sampleRate, 1000, noteFn);
-		loadNotes();
+		tracker = new audioLib.Tracker(sampleRate, 250, noteFn);
+		compressor = new audioLib.BiquadFilter.LowPass(sampleRate, 1000, 0.6);
+		adsr = new audioLib.ADSREnvelope(sampleRate);
+		//loadNotes();
+		lfo = new audioLib.Oscillator(sampleRate, 15);
+		
+		osc = new audioLib.Oscillator(sampleRate);
+		osc.fm = 2.8;
+		
+		var notes = [311.13, 466.16, 369.99, 311.13, 466.16, 369.99, 311.13, 440, 369.99, 311.13, 440, 369.99, 293.66, 415.3, 349.23, 293.66, 415.3, 349.23, 293.66, 466.16, 415.3, 493.88, 369.99, 349.23];
+		
+		for (var i=0; i<300; i++){
+		    //osc.reset();
+		    osc.frequency = notes[i % 24];
+		    
+		    tracker.addBuffer(osc.append(new Float32Array(20000), 1));
+		}
+		
 	}, 2000);
 };
 

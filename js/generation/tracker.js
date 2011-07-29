@@ -63,6 +63,10 @@ Tracker.prototype = {
         self.notes.push(note);
     },
     
+    addBuffer: function(buffer){
+        this.notes.push(buffer);
+    },
+    
     getNoteLength: function(){
         //Returns queued note count
         return this.noteLength;
