@@ -108,7 +108,15 @@ BiquadFilter.AllPass = function(sampleRate, f0, Q){
     return new audioLib.BiquadFilter(sampleRate, b0/a0, b1/a0, b2/a0, a1/a0, a2/a0);
 }
 
-//0db Peak Gain BPF
+/**
+ * Creates a Biquad Band-Pass Filter Effect
+ * 
+ * @constructor
+ * @this {BiquadFilter}
+ * @param {number} samplerate Sample Rate (hz).
+ * @param {number} centerFreq Center frequency of filter: 0dB gain at center peak
+ * @param {number} bandwidthInOctaves Bandwitdth of the filter (between -3dB points), specified in octaves
+*/
 BiquadFilter.BandPass = function(sampleRate, centerFreq, bandwidthInOctaves){
     var w0      = 2* Math.PI*centerFreq/sampleRate,
         cosw0   = Math.cos(w0),
