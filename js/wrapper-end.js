@@ -33,6 +33,13 @@ EffectClass.prototype = {
 	mix:	0.5,
 	join:	function(){
 		return EffectChain.apply(0, [this].concat(Array.prototype.splice.call(arguments, 0)));
+	},
+	addPreProcessing: function(callback){
+		callback.pushSample = this.pushSample;
+		this.pushSample = function(){
+			callback.apply(this, arguments);
+			return callback.pushSample.apply(this, arguments);
+		};
 	}
 };
 
@@ -91,6 +98,12 @@ BufferEffect.prototype = {
 	},
 	join:	function(){
 		return BufferEffectChain.apply(0, [this].concat(Array.prototype.splice.call(arguments, 0)));
+	},
+	addPreProcessing: function(){
+		var i;
+		for (i=0; i<this.effects.length; i++){
+			this.effects[i].addPreProcessing.apply(this.effects[i], arguments);
+		}
 	}
 };
 
@@ -102,26 +115,23 @@ GeneratorClass.prototype = {
 	type:	'generator',
 	source:	true,
 	mix:	1,
-	append: function(buffer, channelCount, addToExisting){
-		var	self  = this,
-		    l     = buffer.length,
-		    c     = channelCount || 1,
-			write = (function(){
-			    if(addToExisting){
-			        return function(pos){buffer[pos] += self.getMix() * self.mix};
-			    } else {
-			        return function(pos){buffer[pos]  = self.getMix() * self.mix};
-			    }
-			}()),
+	append: function(buffer, channelCount){
+		var	l	= buffer.length,
 			i, n;
-					
-		for (i=0; i<l; i+=c){
-			self.generate();
-			for (n=0; n<c; n++){
-				write(i+n);
+		for (i=0; i<l; i+=channelCount){
+			this.generate();
+			for (n=0; n<channelCount; n++){
+				buffer[i + n] = this.getMix(n) * this.mix + buffer[i + n] * (1 - this.mix);
 			}
 		}
 		return buffer;
+	},
+	addPreProcessing: function(callback){
+		callback.generate = this.generate;
+		this.generate = function(){
+			callback.apply(this, arguments);
+			return callback.generate.apply(this, arguments);
+		};
 	}
 };
 
