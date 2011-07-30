@@ -307,6 +307,15 @@ Automation.generatorAppend = function(buffer, channelCount){
 				case 'additiveModulation':
 					self[a.parameter] += self[a.parameter] * a.amount * a.automation.generatedBuffer[i];
 					break;
+				case 'substractiveModulation':
+					self[a.parameter] -= self[a.parameter] * a.amount * a.automation.generatedBuffer[i];
+					break;
+				case 'assignment':
+					self[a.parameter] = a.amount * a.automation.generatedBuffer[i];
+					break;
+				case 'absoluteAssignment':
+					self[a.parameter] = Math.abs(a.amount * a.automation.generatedBuffer[i]);
+					break;
 			}
 		}
 
@@ -351,6 +360,15 @@ Automation.effectAppend = function(buffer){
 						break;
 					case 'additiveModulation':
 						self.effects[n][a.parameter] += self.effects[n][a.parameter] * a.amount * a.automation.generatedBuffer[i];
+						break;
+					case 'substractiveModulation':
+						self.effects[n][a.parameter] -= self.effects[n][a.parameter] * a.amount * a.automation.generatedBuffer[i];
+						break;
+					case 'assignment':
+						self.effects[n][a.parameter] = a.amount * a.automation.generatedBuffer[i];
+						break;
+					case 'absoluteAssignment':
+						self.effects[n][a.parameter] = Math.abs(a.amount * a.automation.generatedBuffer[i]);
 						break;
 				}
 			}
