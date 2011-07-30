@@ -40,6 +40,15 @@ EffectClass.prototype = {
 			callback.apply(this, arguments);
 			return callback.pushSample.apply(this, arguments);
 		};
+	},
+	removePreProcessing: function(callback){
+		var f;
+		while (f = this.pushSample.pushSample){
+			if (f === callback || !callback){
+				this.pushSample		= f;
+				callback.pushSample	= null;
+			}
+		}
 	}
 };
 
@@ -104,6 +113,12 @@ BufferEffect.prototype = {
 		for (i=0; i<this.effects.length; i++){
 			this.effects[i].addPreProcessing.apply(this.effects[i], arguments);
 		}
+	},
+	removePreProcessing: function(){
+		var i;
+		for (i=0; i<this.effects.length; i++){
+			this.effects[i].removePreProcessing.apply(this.effects[i], arguments);
+		}
 	}
 };
 
@@ -118,6 +133,7 @@ GeneratorClass.prototype = {
 	append: function(buffer, channelCount){
 		var	l	= buffer.length,
 			i, n;
+		channelCount	= channelCount || 1;
 		for (i=0; i<l; i+=channelCount){
 			this.generate();
 			for (n=0; n<channelCount; n++){
@@ -132,6 +148,15 @@ GeneratorClass.prototype = {
 			callback.apply(this, arguments);
 			return callback.generate.apply(this, arguments);
 		};
+	},
+	removePreProcessing: function(callback){
+		var f;
+		while (f = this.generate.generate){
+			if (f === callback || !callback){
+				this.generate		= f;
+				callback.generate	= null;
+			}
+		}
 	}
 };
 
@@ -142,7 +167,7 @@ GeneratorClass.prototype = {
 
 	function effects(name, effect, prototype){
 		if (effect){
-			prototype       = prototype || effect.prototype;
+			prototype	= prototype || effect.prototype;
 			effects[name]	= effect;
 			var	proto	= effect.prototype = new EffectClass();
 			proto.name	= proto.fxid = name;
@@ -166,7 +191,7 @@ GeneratorClass.prototype = {
 (function(names, i){
 	function generators(name, effect, prototype){
 		if (effect){
-			prototype       = prototype || effect.prototype;
+			prototype	= prototype || effect.prototype;
 			generators[name]= effect;
 			var	proto	= effect.prototype = new GeneratorClass();
 			proto.name	= proto.fxid = name;
