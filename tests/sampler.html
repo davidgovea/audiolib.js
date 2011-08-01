@@ -7,8 +7,8 @@
 
 var	
 	osc,
-	noteLength, length, baseBuffer, baseWav,
-	sampler,
+	noteLength, length, baseWav,
+//	sampler,
 	dev, sampleRate;
 
 function audioProcess(buffer, channelCount){
@@ -16,8 +16,9 @@ function audioProcess(buffer, channelCount){
 		i, n;
 	for (i=0; i<l; i+=channelCount){
 		sampler.generate();
+		sampler2.generate();
 		for (n=0; n<channelCount; n++){
-			buffer[n + i] = sampler.getMix(n);
+			buffer[n + i] = sampler.getMix(n)+sampler2.getMix(n);
 		}
 	}
 }
@@ -27,12 +28,15 @@ window.onload	= function(){
 		dev		= audioLib.AudioDevice(audioProcess, 2);
 		sampleRate	= dev.sampleRate;
 		sampler		= new audioLib.Sampler(sampleRate, 440);
+		sampler2	= new audioLib.Sampler(sampleRate, 440);
 		osc		= new audioLib.Oscillator(sampleRate, 440);
 		noteLength	= 2; //time in seconds
 		length		= noteLength*sampleRate;
 		baseBuffer	= osc.append(new Float32Array(length), 2);
 		baseWav		= audioLib.PCMData.encode({data: baseBuffer, channelCount: 2, sampleRate: sampleRate});
 		sampler.loadWav(baseWav);
+		sampler2.load({data:baseBuffer, channelCount: 2, sampleRate: 44100}, false);
+		console.log('base: '+baseBuffer[0]+' '+baseBuffer[1]);
 	}, 2000);
 };
 
@@ -44,6 +48,10 @@ window.sample	= function(frequency){
 	sampler.noteOn(frequency);
 };
 
+window.sample2	= function(frequency){
+	sampler.noteOn(frequency);
+};
+
 }());
 
 		</script>
@@ -52,6 +60,7 @@ window.sample	= function(frequency){
 		<p>This test generates a 2-second 440Hz tone, encodes it into PCM data, and loads it into audioLib.Sampler</p>
 		<button onclick="play440()">Play Synthesized 440Hz</button>
 		<button onclick="sample(440)">Play Sampled 440Hz</button>
+		<button onclick="sample2(440)">Play Sample2 440Hz</button>
 		<br><br>
 		<label for="f">Sampler Frequency</label>
 		<input id="f" value="440">

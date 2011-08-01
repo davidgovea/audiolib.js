@@ -26,13 +26,15 @@ window.onload	= function(){
 		dev		= audioLib.AudioDevice(audioProcess, 2);
 		sampleRate	= dev.sampleRate;
 		sampler		= new audioLib.Sampler(sampleRate);
-		sampler.loadWav(atob(samples.kick));
+		sampler.loadWav(atob(samples.osc));
 	}, 2000);
 };
 
 window.play	= function(frequency){
-	console.log(sampler.noteOn(frequency));
+	//console.log(
+		sampler.noteOn(frequency);
 }
+//setInterval(function(){play(document.getElementById('f').value)},50)
 
 }());
 
