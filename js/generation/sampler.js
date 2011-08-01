@@ -43,10 +43,10 @@ Sampler.prototype = {
 	noteOn: function(frequency){
 		frequency	= isNaN(frequency) ? this.pitch : frequency;
 		var	self	= this,
-			speed	= frequency / self.pitch,
+			speed	= frequency / self.pitch * 2,
 			rate	= self.sampleRate,
 			start	= rate * self.delayStart,
-			end	= self.sampleSize - rate * self.delayEnd,
+			end	= self.sampleSize - rate * self.delayEnd - 1,
 			note	= {
 				f:	frequency,
 				p:	start,
@@ -98,7 +98,7 @@ Sampler.prototype = {
 */
 	load: function(data, resample){
 		var	self	= this,
-			samples	= self.samples = Sampler.splitChannels(data.data, data.channelCount),
+			samples	= self.samples = Sampler.deinterleave(data.data, data.channelCount),
 			i;
 		if (resample){
 			for (i=0; i<samples.length; i++){
@@ -195,7 +195,7 @@ Sampler.resample	= function(buffer, fromRate /* or speed */, fromFrequency /* or
  * @return {Array} An array containing the resulting sample buffers.
 */
 
-Sampler.splitChannels	= function(buffer, channelCount){
+Sampler.deinterleave = function(buffer, channelCount){
 	var	l	= buffer.length,
 		size	= l / channelCount,
 		ret	= [],
@@ -215,7 +215,7 @@ Sampler.splitChannels	= function(buffer, channelCount){
  * @param {Array} buffers The buffers to join.
 */
 
-Sampler.joinChannels	= function(buffers){
+Sampler.interleave = function(buffers){
 	var	channelCount	= buffers.length,
 		l		= buffers[0].length,
 		buffer		= new Float32Array(l * channelCount),
@@ -223,6 +223,25 @@ Sampler.joinChannels	= function(buffers){
 	for (i=0; i<channelCount; i++){
 		for (n=0; n<l; n++){
 			buffer[i + n * channelCount] = buffers[i][n];
+		}
+	}
+	return buffer;
+};
+
+/**
+ * Mixes two or more buffers down to one.
+ *
+ * @param {Array} buffer The buffer to append the others to.
+ * @param {Array} bufferX The buffers to append from.
+*/
+
+Sampler.mix = function(buffer){
+	var	buffers	= [].slice.call(arguments, 1),
+		l	= buffer.length,
+		i, c;
+	for (c=0; c<buffers.length; c++){
+		for (i=0; i<l; i++){
+			buffer[i] += buffer[c][i];
 		}
 	}
 	return buffer;

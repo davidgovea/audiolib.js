@@ -14,6 +14,7 @@ audioLib.Chorus		= Chorus;
 audioLib.Compressor	= Compressor;
 audioLib.Delay		= Delay;
 audioLib.Distortion	= Distortion;
+audioLib.GainController	= GainController;
 audioLib.IIRFilter	= IIRFilter;
 audioLib.LP12Filter	= LP12Filter;
 
@@ -21,7 +22,6 @@ audioLib.LP12Filter	= LP12Filter;
 //Geneneration
 audioLib.Oscillator	= Oscillator;
 audioLib.Sampler	= Sampler;
-audioLib.Tracker    = Tracker;
 
 function EffectClass(){
 }
@@ -141,7 +141,7 @@ GeneratorClass.prototype = {
 		for (i=0; i<l; i+=channelCount){
 			this.generate();
 			for (n=0; n<channelCount; n++){
-				buffer[i + n] = this.getMix(n) * this.mix + buffer[i + n] * (1 - this.mix);
+				buffer[i + n] = this.getMix(n) * this.mix + buffer[i + n];
 			}
 		}
 		return buffer;
@@ -201,7 +201,7 @@ GeneratorClass.prototype = {
 	for (i=0; i<names.length; i++){
 		effects(names[i], audioLib[names[i]], audioLib[names[i]].prototype);
 	}
-}(['BiquadFilter', 'BitCrusher', 'Chorus', 'Compressor', 'Delay', 'Distortion', 'IIRFilter', 'LP12Filter']));
+}(['BiquadFilter', 'BitCrusher', 'Chorus', 'Compressor', 'Delay', 'Distortion', 'GainController', 'IIRFilter', 'LP12Filter']));
 
 (function(names, i){
 	function generators(name, effect, prototype){
@@ -224,7 +224,7 @@ GeneratorClass.prototype = {
 	for (i=0; i<names.length; i++){
 		generators(names[i], audioLib[names[i]], audioLib[names[i]].prototype);
 	}
-}(['Oscillator', 'Sampler', 'Tracker']));
+}(['Oscillator', 'Sampler', 'ADSREnvelope', 'StepSequencer']));
 
 function Codec(name, codec){
 	var nameCamel = name[0].toUpperCase() + name.substr(1).toLowerCase();
@@ -322,7 +322,7 @@ Automation.generatorAppend = function(buffer, channelCount){
 		self.generate();
 
 		for (n=0; n<channelCount; n++){
-			buffer[i + n] = self.getMix(n) * self.mix + buffer[i + n] * (1 - self.mix);
+			buffer[i + n] = self.getMix(n) * self.mix + buffer[i + n];
 		}
 	}
 	for (m=0; m<k; m++){

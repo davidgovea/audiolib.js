@@ -2,12 +2,13 @@
 <html>
 	<head>
 		<script src="../lib/audiolib.js"></script>
+		<script src="samples/drum-samples.js"></script>
 		<script>
 (function(){
 
 var	
 	osc, lfo, tracker,
-	dev, sampleRate, fx;
+	dev, sampleRate, fx, sampler;
 
 function fillBuffer(buffer, channelCount){
 	var	l	= buffer.length,
@@ -28,18 +29,11 @@ function loadNotes(){
     var len = tracker.getNoteLength()*0.75;
     tracker.setLooping();
     tracker.addNote(function(){
-        var lfo = new audioLib.Oscillator(sampleRate, 440/4);
-        var osc = new audioLib.Oscillator(sampleRate, 440);
-        
-        var adsr = new audioLib.ADSREnvelope(sampleRate);
-        adsr.triggerGate(true);
+        sampler.noteOn(440);
         
         return function(i){
-            if(i>len) adsr.triggerGate(false);
-            lfo.generate();
-            osc.fm = lfo.getMix();
-            osc.generate();
-            return osc.getMix()*adsr.generate();
+            sampler.generate();
+            return sampler.getMix();
         };
     }());
     
@@ -114,22 +108,24 @@ window.onload	= function(){
 		fx		=// (new audioLib.LP12Filter(sampleRate, 1000, 8));//.join(
 			//new audioLib.Delay(sampleRate, 3, 0.1);
 		//);
-		tracker = new audioLib.Tracker(sampleRate, 250, noteFn);
-		compressor = new audioLib.BiquadFilter.LowPass(sampleRate, 1000, 0.6);
+		tracker = new audioLib.Tracker(sampleRate, 1000, noteFn);
+		compressor = new audioLib.BiquadFilter.LowPass(sampleRate, 50, 0.6);
 		adsr = new audioLib.ADSREnvelope(sampleRate);
 		//loadNotes();
 		lfo = new audioLib.Oscillator(sampleRate, 15);
+		sampler		= new audioLib.Sampler(sampleRate);
+		sampler.loadWav(atob(samples.kick));
 		
 		osc = new audioLib.Oscillator(sampleRate);
 		osc.fm = 2.8;
 		
 		var notes = [311.13, 466.16, 369.99, 311.13, 466.16, 369.99, 311.13, 440, 369.99, 311.13, 440, 369.99, 293.66, 415.3, 349.23, 293.66, 415.3, 349.23, 293.66, 466.16, 415.3, 493.88, 369.99, 349.23];
-		
+		sampler.noteOn(440);
 		for (var i=0; i<300; i++){
 		    //osc.reset();
 		    osc.frequency = notes[i % 24];
 		    
-		    tracker.addBuffer(osc.append(new Float32Array(20000), 1));
+		    tracker.addBuffer(sampler.append(new Float32Array(20000), 1));
 		}
 		
 	}, 2000);
