@@ -43,7 +43,7 @@ Sampler.prototype = {
 	noteOn: function(frequency){
 		frequency	= isNaN(frequency) ? this.pitch : frequency;
 		var	self	= this,
-			speed	= 1,
+			speed	= frequency / self.pitch,
 			rate	= self.sampleRate,
 			start	= rate * self.delayStart,
 			end	= self.sampleSize - rate * self.delayEnd - 1,
@@ -85,7 +85,7 @@ Sampler.prototype = {
 		ch = ch || 0;
 		if (this.samples[ch]){
 			for (i=0; i<voices.length; i++){
-				smpl	+= 0.8*Sampler.interpolate(this.samples[ch], voices[i].p);
+				smpl	+= Sampler.interpolate(this.samples[ch], voices[i].p);
 			}
 		}
 		return smpl;
@@ -100,14 +100,11 @@ Sampler.prototype = {
 		var	self	= this,
 			samples	= self.samples = Sampler.deinterleave(data.data, data.channelCount),
 			i;
-			console.log(samples[0].length);
 		if (resample){
-			console.log('resampling');
 			for (i=0; i<samples.length; i++){
 				samples[i] = Sampler.resample(samples[i], data.sampleRate, self.sampleRate);
 			}
 		}
-		console.log(samples[0][150]);
 		self.sample	= data.data;
 		self.samples	= samples;
 		self.data	= data;
@@ -177,7 +174,6 @@ interpolation('linear');
  * @param {number} toFrequency The frequency of the created buffer.
 */
 Sampler.resample	= function(buffer, fromRate /* or speed */, fromFrequency /* or toRate */, toRate, toFrequency){
-	console.log('resampling');
 	var
 		argc		= arguments.length,
 		speed		= argc === 2 ? fromRate : argc === 3 ? toRate / fromFrequency : toRate / fromRate * toFrequency / fromFrequency,
@@ -200,7 +196,6 @@ Sampler.resample	= function(buffer, fromRate /* or speed */, fromFrequency /* or
 */
 
 Sampler.deinterleave = function(buffer, channelCount){
-	console.log('deinter');
 	var	l	= buffer.length,
 		size	= l / channelCount,
 		ret	= [],
