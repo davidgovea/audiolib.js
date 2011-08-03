@@ -5,8 +5,8 @@ function Freeverb(sampleRate, isRightChannel, tuning){
 	self.tuning 	= tuning || Freeverb.tuning;
 	self.spread	= isRightChannel ? self.tuning.stereospread : 0;
 	self.gain	= self.tuning.fixedgain;
-	self.wet	= 0.33;
-	self.dry	= .7;
+	self.wet	= 0.5;
+	self.dry	= .6;
 	self.CFs	= (function(tuning){
 		var 	combs	= [],
 			num	= tuning.numcombs,
@@ -15,7 +15,7 @@ function Freeverb(sampleRate, isRightChannel, tuning){
 			sizes	= tuning.combs,
 			i;
 		for(i=0; i<num; i++){
-			combs.push(new Freeverb.CombFilter(self.sampleRate, sizes[i] + self.spread, feed, damp));
+			combs.push(new audioLib.CombFilter(self.sampleRate, sizes[i] + self.spread, feed, damp));
 		}
 		return combs;
 	}(self.tuning));
@@ -57,6 +57,7 @@ function Freeverb(sampleRate, isRightChannel, tuning){
 	};
 }
 
+// Tuning from FreeVerb source. Much of this is unused.
 Freeverb.tuning = {
 	numcombs:	8,
 	combs:		[1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617],
@@ -76,39 +77,6 @@ Freeverb.tuning = {
 	initialmode:	0,
 	freezemode:	0.5,
 	stereospread:	23
-};
-
-Freeverb.CombFilter = function(sampleRate, bufferSize, feedback, damping){
-	var	self	= this,
-		sample  = 0.0,
-		index	= 0,
-		store	= 0;
-	self.sampleRate	= sampleRate;
-	self.buffer	= new Float32Array(isNaN(bufferSize) ? 1200 : bufferSize);
-	self.bufferSize	= self.buffer.length;
-	self.feedback	= isNaN(feedback) ? 0.84 : feedback;
-	self.damping	= isNaN(damping) ? 0.2 : damping;
-
-	self.pushSample	= function(s){
-		sample	= self.buffer[index];
-		store	= sample * (1 - self.damping) + store * self.damping;	// Note: optimizable by storing (1-self.damp) like freeverb (damp2). Would require filter.setDamp(x) rather than filter.damp=x
-		self.buffer[index++] = s + store * self.feedback;
-		if (index >= self.bufferSize) {
-			index = 0;
-		}
-		return sample;
-	};
-	
-	self.getMix = function(){
-		return sample;
-	};
-	
-	self.reset = function(){		
-		index	= 0;
-		store	= 0;
-		sample	= 0.0;
-		self.buffer = new Float32Array(self.bufferSize);
-	};
 };
 
 Freeverb.AllPassFilter = function(sampleRate, bufferSize, feedback){

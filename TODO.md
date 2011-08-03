@@ -1,9 +1,11 @@
 ## General thoughts
- * Pushsample with ADSR envelope (no live sustain stage)
+ * Resampling.. NaN length Float32 array creation
+
+ * Biquad documentation is borked (bitcrusher remnants)
 
  * Decay param for tracker note overflows
-
- * FM for osc.append ?
+ 
+ * BufferEffectChain?? wrapper-end line 110
 
  * Implement freeverb comb filter & all-pass (not biquad APF)
 

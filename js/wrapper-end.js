@@ -12,6 +12,7 @@ audioLib.UIControl		= UIControl;
 audioLib.BiquadFilter	= BiquadFilter;
 audioLib.BitCrusher	= BitCrusher;
 audioLib.Chorus		= Chorus;
+audioLib.CombFilter	= CombFilter;
 audioLib.Compressor	= Compressor;
 audioLib.Delay		= Delay;
 audioLib.Distortion	= Distortion;
@@ -202,7 +203,7 @@ GeneratorClass.prototype = {
 	for (i=0; i<names.length; i++){
 		effects(names[i], audioLib[names[i]], audioLib[names[i]].prototype);
 	}
-}(['BiquadFilter', 'BitCrusher', 'Chorus', 'Compressor', 'Delay', 'Distortion', 'GainController', 'IIRFilter', 'LP12Filter']));
+}(['BiquadFilter', 'BitCrusher', 'Chorus', 'CombFilter', 'Compressor', 'Delay', 'Distortion', 'GainController', 'IIRFilter', 'LP12Filter']));
 
 (function(names, i){
 	function generators(name, effect, prototype){
