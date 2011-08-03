@@ -17,8 +17,6 @@ function fillBuffer(buffer, channelCount){
 		lfo.generate();
 		osc.generate(lfo.getMix() * 0.2);
 		smpl = fx.pushSample(osc.getMix() * 0.2);
-		if (Math.abs(smpl) > 0.23) console.log(smpl);
-		
 		for (n=0; n<channelCount; n++){
 			buffer[i + n] = smpl;
 		}

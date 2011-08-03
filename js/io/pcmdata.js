@@ -256,7 +256,7 @@ PCMData.decode	= function(data, asyncCallback){
 			chunks:		chunks,
 			data:		samples
 		};
-	console.log("channels "+wChannels);
+
 	function readChunk(){
 		sGroupID		= stream.read(4);
 		dwChunkSize		= stream.readUint32();
