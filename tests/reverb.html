@@ -2,20 +2,16 @@
 <html>
 	<head>
 		<script src="../lib/audiolib.js"></script>
-		<script src="../js/effects/freeverb.js"></script>
 		<script src="samples/freeverb.js"></script>
-		<script src="samples/drum-samples.js"></script>
 		<script>
 (function(){
 
-var	
-	sampler,
-	dev, sampleRate, reverb, apply,
+var	sampler, dev, sampleRate, reverb, apply,
 	effect = {
 		none: function(s, n){return s;},
 		reverb: function(s, n){return reverb[n].pushSample(s);}
 	};
-	apply = effect.none;
+apply = effect.none;
 
 function audioProcess(buffer, channelCount){
 	var	l	= buffer.length,
@@ -33,25 +29,28 @@ window.onload	= function(){
 		dev		= audioLib.AudioDevice(audioProcess, 2);
 		sampleRate	= dev.sampleRate;
 		sampler		= new audioLib.Sampler(sampleRate);
-		reverb		= [new Freeverb(sampleRate, false), new Freeverb(sampleRate, true)];
+		reverb		= [new audioLib.Reverb(sampleRate, false), new audioLib.Reverb(sampleRate, true)];
 		
 		var sample = audioLib.PCMData.decode(atob(freeverb.sample));
-		console.log(sample);
 		
 		//sample = (sampleRate === 44100) ? sample : audioLib.Sampler.resample(sample, 44100, sampleRate);
 		//sampler.loadWav(atob(freeverb.sample), true);
-		sampler.load(sample, true);
+		sampler.load(sample, (sampleRate === 44100 ? false : true));
 		//if(sampleRate !== 44100) sampler.load(audioLib.Sampler.resample(sampler.sample, 44100, sampleRate))
 	}, 2000);
 };
 
-window.play	= function(frequency){
+window.play	= function(frequency, wet, dry){
 	apply = effect.none;
+	reverb[0].wet = reverb[1].wet = wet;
+	reverb[0].dry = reverb[1].dry = dry;
 	console.log(sampler.noteOn(frequency));
 }
 
-window.playReverb	= function(frequency){
+window.playReverb	= function(frequency, wet, dry){
 	apply = effect.reverb;
+	reverb[0].wet = reverb[1].wet = wet;
+	reverb[0].dry = reverb[1].dry = dry;
 	console.log(sampler.noteOn(frequency));
 }
 
@@ -62,7 +61,11 @@ window.playReverb	= function(frequency){
 	<body>
 		<label for="f">Frequency</label>
 		<input id="f" value="440">
-		<button onclick="play(document.getElementById('f').value)">Play</button>
-		<button onclick="playReverb(document.getElementById('f').value)">Play Reverb</button>
+		<label for="w">Wet</label>
+		<input id="w" value="0.6">
+		<label for="d">Dry</label>
+		<input id="d" value="0.65"><br>
+		<button onclick="play(document.getElementById('f').value,document.getElementById('w').value,document.getElementById('d').value)">Play</button>
+		<button onclick="playReverb(document.getElementById('f').value,document.getElementById('w').value,document.getElementById('d').value)">Play Reverb</button>
 	</body>
 </html>

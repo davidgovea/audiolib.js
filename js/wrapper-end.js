@@ -19,6 +19,7 @@ audioLib.Distortion	= Distortion;
 audioLib.GainController	= GainController;
 audioLib.IIRFilter	= IIRFilter;
 audioLib.LP12Filter	= LP12Filter;
+audioLib.Reverb		= Freeverb;
 
 
 //Geneneration
@@ -203,7 +204,7 @@ GeneratorClass.prototype = {
 	for (i=0; i<names.length; i++){
 		effects(names[i], audioLib[names[i]], audioLib[names[i]].prototype);
 	}
-}(['BiquadFilter', 'BitCrusher', 'Chorus', 'CombFilter', 'Compressor', 'Delay', 'Distortion', 'GainController', 'IIRFilter', 'LP12Filter']));
+}(['BiquadFilter', 'BitCrusher', 'Chorus', 'CombFilter', 'Compressor', 'Delay', 'Distortion', 'GainController', 'IIRFilter', 'LP12Filter', 'Reverb']));
 
 (function(names, i){
 	function generators(name, effect, prototype){

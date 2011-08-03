@@ -5,8 +5,8 @@ function Freeverb(sampleRate, isRightChannel, tuning){
 	self.tuning 	= tuning || Freeverb.tuning;
 	self.spread	= isRightChannel ? self.tuning.stereospread : 0;
 	self.gain	= self.tuning.fixedgain;
-	self.wet	= 0.5;
-	self.dry	= .6;
+	self.wet	= 0.6;
+	self.dry	= 0.7;
 	self.CFs	= (function(tuning){
 		var 	combs	= [],
 			num	= tuning.numcombs,
@@ -52,8 +52,15 @@ function Freeverb(sampleRate, isRightChannel, tuning){
 		return sample;
 	};
 	
-	self.reset = function(){		
-		
+	self.reset = function(){
+		var	i;		
+		for(i=0; i < self.numCFs; i++){
+			self.CFs[i].reset();
+		}
+		for(i=0; i < self.numAPFs; i++){
+			self.APFs[i].reset();
+		}
+		sample	= 0.0;
 	};
 }
 
