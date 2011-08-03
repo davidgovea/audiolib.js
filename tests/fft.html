@@ -3,6 +3,7 @@
 	<head>
 		<title>audiolib.js | Biquad Filter Test</title>
 		<script src="../lib/audiolib.js"></script>
+		<script src="../../dsp.js/dsp.js"></script>
 		<script>
 (function(){
 	
@@ -14,11 +15,11 @@ function plotPCM(buffer, channelCount){
 		width		= canvas.width,
 		height		= canvas.height,
 		halfHeight	= height/2,
-		waveScale	= 100, // Pixel height of amplitude 1
+		waveScale	= 400, // Pixel height of amplitude 1
 		sampleRate	= 44100,
 		plotTime	= 2, // Seconds to plot
 		xscale		= width/(sampleRate*plotTime),
-		osc		= new audioLib.Oscillator(sampleRate, 220),
+		osc		= new audioLib.Oscillator(sampleRate, 600),
 		osc2		= new audioLib.Oscillator(sampleRate, 3500),
 		lpf		= new audioLib.BiquadFilter.LowPass(sampleRate, 1200, 0.6),
 		apf		= new audioLib.BiquadFilter.AllPass(sampleRate, 300, 0.6),
@@ -50,7 +51,7 @@ function plotPCM(buffer, channelCount){
 		osc2.reset();
 		for(var i=0, max=sampleRate*plotTime; i<max; i++){
 			
-			context.lineTo(i*xscale, halfHeight + (osc.getMix()+osc2.getMix()) * waveScale);
+			context.lineTo(i*xscale, halfHeight + (osc.getMix()) * waveScale);
 			osc.generate();
 			osc2.generate();
 		}
@@ -71,7 +72,7 @@ function plotPCM(buffer, channelCount){
 		fft.reset();
 		
 		for(var i=0, max=sampleRate*plotTime; i<max; i++){
-			fft.pushSample(filter.pushSample((osc.getMix()+osc2.getMix())));
+			fft.pushSample((osc.getMix()));
 			osc.generate();
 			osc2.generate();
 		}
@@ -80,6 +81,24 @@ function plotPCM(buffer, channelCount){
 			context.lineTo(i / fft.spectrum.length * width, fft.spectrum[i] * waveScale);
 		}
 
+		context.stroke();
+		
+		
+		osc.reset();
+		var fftArr = [];
+    
+		for(var j=0; j<4096; j++){
+			fftArr[j]=(osc.getMix());
+			osc.generate();
+		}
+		var fft2 = new FFT(4096,sampleRate);
+    		fft2.forward(fftArr);
+    		context.strokeStyle="#FF0000";
+		context.beginPath();
+		context.moveTo(0, halfHeight);
+		for (i=0; i<fft2.spectrum.length; i++){
+			context.lineTo(i / fft2.spectrum.length * width, fft2.spectrum[i] * waveScale);
+		}
 		context.stroke();
 	};
 			
