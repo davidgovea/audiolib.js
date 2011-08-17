@@ -29,7 +29,11 @@ audioLib.Sampler	= Sampler;
 
 
 //Processing
-audioLib.AudioProcessingUnit = AudioProcessingUnit;
+audioLib.AudioProcessingUnit	= AudioProcessingUnit;
+audioLib.FFT			= FFT;
+
+
+audioLib.AudioDevice	= audioLib.Sink = (function(){ return this; }()).Sink;
 
 
 function EffectClass(){
@@ -174,13 +178,9 @@ GeneratorClass.prototype = {
 	addAutomation: function(){
 		return audioLib.Automation.apply(audioLib, [this].concat([].slice.call(arguments)));
 	},
-	generateBuffer: function(length){
+	generateBuffer: function(length, chCount){
 		this.generatedBuffer = new Float32Array(length);
-		var i;
-		for (i=0; i<length; i++){
-			this.generate();
-			this.generatedBuffer[i] = this.getMix();
-		}
+		this.append(this.generatedBuffer, chCount || 1);
 	}
 };
 
@@ -217,9 +217,7 @@ GeneratorClass.prototype = {
 	effects('BiquadLowPassFilter', BiquadFilter.LowPass);
 	effects('BiquadAllPassFilter', BiquadFilter.AllPass);
 	effects('BiquadBandPassFilter', BiquadFilter.BandPass);
-	effects('FFT', audioLib.FourierTransform.FFT);
-	audioLib.FFT = audioLib.FourierTransform.FFT;
-}(['BiquadFilter', 'BitCrusher', 'Chorus', 'CombFilter', 'Compressor', 'Delay', 'Distortion', 'GainController', 'IIRFilter', 'LP12Filter', 'Reverb']));
+}(['BiquadFilter', 'BitCrusher', 'Chorus', 'CombFilter', 'Compressor', 'Delay', 'Distortion', 'GainController', 'IIRFilter', 'LP12Filter', 'Reverb', 'FFT']));
 
 (function(names, i){
 	function generators(name, effect, prototype){
@@ -301,12 +299,12 @@ Automation.generatorAppend = function(buffer, channelCount){
 		l	= buffer.length,
 		k	= self.automation.length,
 		def	= [],
-		i, n, m, a;
+		z, i, n, m, a;
 	channelCount	= channelCount || 1;
 	for (m=0; m<k; m++){
 		def.push(self[self.automation[m].parameter]);
 	}
-	for (i=0; i<l; i+=channelCount){
+	for (i=0, z=0; i<l; i+=channelCount, z++){
 		for (m=0; m<k; m++){
 			self[self.automation[m].parameter] = def[m];
 		}
@@ -314,25 +312,25 @@ Automation.generatorAppend = function(buffer, channelCount){
 			a = self.automation[m];
 			switch(a.type){
 				case 'modulation':
-					self[a.parameter] *= a.amount * a.automation.generatedBuffer[i];
+					self[a.parameter] *= a.amount * a.automation.generatedBuffer[z];
 					break;
 				case 'addition':
-					self[a.parameter] += a.amount * a.automation.generatedBuffer[i];
+					self[a.parameter] += a.amount * a.automation.generatedBuffer[z];
 					break;
 				case 'substraction':
-					self[a.parameter] -= a.amount * a.automation.generatedBuffer[i];
+					self[a.parameter] -= a.amount * a.automation.generatedBuffer[z];
 					break;
 				case 'additiveModulation':
-					self[a.parameter] += self[a.parameter] * a.amount * a.automation.generatedBuffer[i];
+					self[a.parameter] += self[a.parameter] * a.amount * a.automation.generatedBuffer[z];
 					break;
 				case 'substractiveModulation':
-					self[a.parameter] -= self[a.parameter] * a.amount * a.automation.generatedBuffer[i];
+					self[a.parameter] -= self[a.parameter] * a.amount * a.automation.generatedBuffer[z];
 					break;
 				case 'assignment':
-					self[a.parameter] = a.amount * a.automation.generatedBuffer[i];
+					self[a.parameter] = a.amount * a.automation.generatedBuffer[z];
 					break;
 				case 'absoluteAssignment':
-					self[a.parameter] = Math.abs(a.amount * a.automation.generatedBuffer[i]);
+					self[a.parameter] = Math.abs(a.amount * a.automation.generatedBuffer[z]);
 					break;
 			}
 		}
@@ -354,39 +352,39 @@ Automation.effectAppend = function(buffer){
 		l	= buffer.length,
 		k	= self.automation.length,
 		def	= [],
-		i, n, m, z, a;
+		i, n, m, z, a, x;
 	for (m=0; m<k; m++){
 		def.push([]);
 		for (n=0; n<ch; n++){
 			def[m].push(self.effects[n][self.automation[m].parameter]);
 		}
 	}
-	for (i=0; i<l; i+=ch){
+	for (x=0, i=0; i<l; i+=ch, x++){
 		for (n=0; n<ch; n++){
 			for (m=0; m<k; m++){
 				a = self.automation[m];
 				self.effects[n][a.parameter] = def[m][n];
 				switch(a.type){
 					case 'modulation':
-						self.effects[n][a.parameter] *= a.amount * a.automation.generatedBuffer[i];
+						self.effects[n][a.parameter] *= a.amount * a.automation.generatedBuffer[x];
 						break;
 					case 'addition':
-						self.effects[n][a.parameter] += a.amount * a.automation.generatedBuffer[i];
+						self.effects[n][a.parameter] += a.amount * a.automation.generatedBuffer[x];
 						break;
 					case 'substraction':
-						self.effects[n][a.parameter] -= a.amount * a.automation.generatedBuffer[i];
+						self.effects[n][a.parameter] -= a.amount * a.automation.generatedBuffer[x];
 						break;
 					case 'additiveModulation':
-						self.effects[n][a.parameter] += self.effects[n][a.parameter] * a.amount * a.automation.generatedBuffer[i];
+						self.effects[n][a.parameter] += self.effects[n][a.parameter] * a.amount * a.automation.generatedBuffer[x];
 						break;
 					case 'substractiveModulation':
-						self.effects[n][a.parameter] -= self.effects[n][a.parameter] * a.amount * a.automation.generatedBuffer[i];
+						self.effects[n][a.parameter] -= self.effects[n][a.parameter] * a.amount * a.automation.generatedBuffer[x];
 						break;
 					case 'assignment':
-						self.effects[n][a.parameter] = a.amount * a.automation.generatedBuffer[i];
+						self.effects[n][a.parameter] = a.amount * a.automation.generatedBuffer[x];
 						break;
 					case 'absoluteAssignment':
-						self.effects[n][a.parameter] = Math.abs(a.amount * a.automation.generatedBuffer[i]);
+						self.effects[n][a.parameter] = Math.abs(a.amount * a.automation.generatedBuffer[x]);
 						break;
 				}
 			}

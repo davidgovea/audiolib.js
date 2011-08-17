@@ -3,17 +3,14 @@ audiolib.js
 
 audiolib.js is a powerful audio tools library for javascript.
 
-Amongst other things, it provides AudioDevice class which has a consistent callback API that supports both Firefox4's Audio Data API and Chrome 10's Web Audio API.
-
-As of v.0.4.0, audioLib supports scheduling, which means you can synchronize events with the audio stream (e.g. turning a slider would be scheduled to the right time in the buffer versus being changed only on buffer fill event).
-However, using the scheduled interface is a design choice you will have to weigh carefully, as it might introduce a performance hit, and it affects how your data is being handled. For instance, in the scheduled interface you will most likely not get a buffer of the specified preBufferSize, but instead, you get a buffer that contains a single sample for each channel, and you have to be careful with this, performance-wise.
+Amongst other things, it's bundled with [sink.js](https://github.com/jussi-kalliokoski/sink.js) that provides a Sink class which has a consistent callback audio output API that supports both Firefox4's Audio Data API and Chrome 10's Web Audio API.
 
 Usage
 -----
 
 ```javascript
-// Create a device.
-var dev = audioLib.AudioDevice(function(sampleBuffer){
+// Create an output.
+var dev = audioLib.Sink(function(sampleBuffer){
 	// Fill the buffer here.
 }, channelCount, preBufferSize, sampleRate);
 
@@ -21,16 +18,8 @@ var dev = audioLib.AudioDevice(function(sampleBuffer){
 // Writing buffers:
 dev.writeBuffer(buffer);
 
-// Or create a scheduled AudioDevice
-var dev = audioLib.AudioDevice.createScheduled(/* same arguments as for the normal AudioDevice call */);
-
-// Schedule an event
-dev.schedule(function(){
-	// do something, change oscillator frequency, whatever, see ./tests/scheduling.html for an example.
-});
-
-// If you want your application to work as a background tab in Firefox 4, do this before creating the device:
-audioLib.AudioDevice.devices.moz.backgroundWork = true;
+// If you want your application to work as a background tab in Firefox 5+, do this before creating the device:
+audioLib.Sink.backgroundWork = true;
 
 // Effects
 
@@ -123,7 +112,7 @@ You can also use audiolib.js inside Audio Workers (Firefox 6.0+ only), but this 
 ```javascript
 
 var worker = audioLib.AudioWorker(function(){
-	device = audioLib.AudioDevice(function(buffer, channelCount){
+	device = audioLib.Sink(function(buffer, channelCount){
 		// Do some audio processing, like you weren't in a worker.
 	});
 }, true /* enables injections */);
@@ -160,8 +149,25 @@ Demos
 
 (if you have your own, please fork & add | msg me)
 
-* http://jsmad.org
-* http://niiden.com/orbisyn/
+* [JSMad](http://jsmad.org/)
+* [Orbisyn](http://niiden.com/orbisyn/)
+* [jams.no.de](http://jams.no.de)
+
+Libraries bundled with audiolib.js
+----------------------------------
+
+* [sink.js](https://github.com/jussi-kalliokoski/sink.js), for output and buffer handling.
+* [PCMData.js](https://github.com/jussi-kalliokoski/pcmdata.js), for WAV codecs.
+* [binary.js](https://github.com/jussi-kalliokoski/binary.js), for PCMData.js and general binary data processing.
+* [fft.js](https://github.com/jussi-kalliokoski/fft.js), for super fast FT.
+
+Related libraries
+-----------------
+
+* [XAudioJS](https://github.com/grantgalitz/XAudioJS) is an alternative audio sink with built-in resampling and a Flash fallback. More developer-controlled output environment, that might be more sane for example games.
+* [dynamicaudio.js](http://github.com/bfirsh/dynamicaudio.js) is a Flash fallback for Mozilla Audio Data API.
+* [Audiolet](https://github.com/oampo/Audiolet) is a graph-based audio routing framework with a lot of nice stuff.
+* [DSP.js](https://github.com/corbanbrook/dsp.js) is an extensive DSP toolkit originally designed for the Mozilla Audio Data API.
 
 Plugins
 -------
