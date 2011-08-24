@@ -6,7 +6,7 @@
  * 
  * @constructor
  * @this {BiquadFilter}
- * @param {number} samplerate Sample Rate (hz).
+ * @param {number} samplerate Sample Rate (Hz).
  * @param {number} b0 Biquadratic difference equation parameter
  * @param {number} b1 Biquadratic difference equation parameter
  * @param {number} b2 Biquadratic difference equation parameter
@@ -66,8 +66,8 @@ BiquadFilter.BiquadFilterClass.prototype = {
  * 
  * @constructor
  * @this {BiquadFilter}
- * @param {number} samplerate Sample Rate (hz).
- * @param {number} cutoff Low-pass cutoff frequency (hz).
+ * @param {number} samplerate Sample Rate (Hz).
+ * @param {number} cutoff Low-pass cutoff frequency (Hz).
  * @param {number} Q Filter Q-factor (Q<0.5 filter underdamped, Q>0.5 filter overdamped)
 */
 BiquadFilter.LowPass = function(sampleRate, cutoff, Q){
@@ -89,8 +89,8 @@ BiquadFilter.LowPass = function(sampleRate, cutoff, Q){
  * 
  * @constructor
  * @this {BiquadFilter}
- * @param {number} samplerate Sample Rate (hz).
- * @param {number} cutoff High-pass cutoff frequency (hz).
+ * @param {number} samplerate Sample Rate (Hz).
+ * @param {number} cutoff High-pass cutoff frequency (Hz).
  * @param {number} Q Filter Q-factor (Q<0.5 filter underdamped, Q>0.5 filter overdamped)
 */
 BiquadFilter.HighPass = function(sampleRate, cutoff, Q){
@@ -112,8 +112,8 @@ BiquadFilter.HighPass = function(sampleRate, cutoff, Q){
  * 
  * @constructor
  * @this {BiquadFilter}
- * @param {number} samplerate Sample Rate (hz).
- * @param {number} f0 Significant frequency: filter will cause a phase shift of 180deg at f0 (hz).
+ * @param {number} samplerate Sample Rate (Hz).
+ * @param {number} f0 Significant frequency: filter will cause a phase shift of 180deg at f0 (Hz).
  * @param {number} Q Filter Q-factor (Q<0.5 filter underdamped, Q>0.5 filter overdamped)
 */
 BiquadFilter.AllPass = function(sampleRate, f0, Q){
@@ -135,8 +135,8 @@ BiquadFilter.AllPass = function(sampleRate, f0, Q){
  * 
  * @constructor
  * @this {BiquadFilter}
- * @param {number} samplerate Sample Rate (hz).
- * @param {number} centerFreq Center frequency of filter: 0dB gain at center peak
+ * @param {number} samplerate Sample Rate (Hz).
+ * @param {number} centerFreq Center frequency of filter: 0dB gain at center peak (Hz)
  * @param {number} bandwidthInOctaves Bandwitdth of the filter (between -3dB points), specified in octaves
 */
 BiquadFilter.BandPass = function(sampleRate, centerFreq, bandwidthInOctaves){
@@ -154,8 +154,34 @@ BiquadFilter.BandPass = function(sampleRate, centerFreq, bandwidthInOctaves){
 	this.reset(sampleRate, b0/a0, b1/a0, b2/a0, a1/a0, a2/a0);
 };
 
+/**
+ * Creates a Biquad Peaking EQ Filter Effect
+ * 
+ * @constructor
+ * @this {BiquadFilter}
+ * @param {number} samplerate Sample Rate (Hz).
+ * @param {number} dBGain Amount of gain in dB.
+ * @param {number} centerFreq Center frequency: filter applies gain dbGain at center frequency (Hz).
+ * @param {number} bandwidthInOctaves Bandwitdth of the filter (between -3dB points), specified in octaves
+*/
+BiquadFilter.PeakingEQ = function(sampleRate, dBGain, centerFreq, bandwidthInOctaves){
+	var	A	= Math.sqrt(Math.pow(10, dbGain / 20)),
+		w0	= 2 * Math.PI * centerFreq / sampleRate,
+		cosw0	= Math.cos(w0),
+		sinw0	= Math.sin(w0),
+		toSinh	= Math.log(2)/2 * bandwidthInOctaves * w0/sinw0,
+		alpha	= sinw0 * (Math.exp(toSinh) - Math.exp(-toSinh))/2,
+		b0	= 1 + alpha * A,
+		b1	= -2 * cosw0,
+		b2	= 1 - alpha * A,
+		a0	= 1 + alpha / A,
+		a1	= b1,
+		a2	= 1 - alpha / A;
+	this.reset(sampleRate, b0/a0, b1/a0, b2/a0, a1/a0, a2/a0);
+};
+
 (function(classes, i){
 for (i=0; i<classes.length; i++){
 	classes[i].prototype = new BiquadFilter.BiquadFilterClass();
 }
-}([BiquadFilter, BiquadFilter.LowPass, BiquadFilter.HighPass, BiquadFilter.AllPass, BiquadFilter.BandPass]));
+}([BiquadFilter, BiquadFilter.LowPass, BiquadFilter.HighPass, BiquadFilter.AllPass, BiquadFilter.BandPass, BiquadFilter.PeakingEQ]));
