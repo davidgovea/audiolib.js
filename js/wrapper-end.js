@@ -251,6 +251,7 @@ GeneratorClass.prototype = {
 	effects('BiquadLowPassFilter', BiquadFilter.LowPass);
 	effects('BiquadAllPassFilter', BiquadFilter.AllPass);
 	effects('BiquadBandPassFilter', BiquadFilter.BandPass);
+	effects('BiquadPeakingEQFilter', BiquadFilter.PeakingEQ);
 }(['BiquadFilter', 'BitCrusher', 'Chorus', 'CombFilter', 'Compressor', 'Delay', 'Distortion', 'GainController', 'IIRFilter', 'LP12Filter', 'Reverb', 'FFT']));
 
 (function(names, i){
