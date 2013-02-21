@@ -14,11 +14,14 @@ function plotPCM(buffer, channelCount){
         halfHeight  = height/2,
         waveScale   = 100, // Pixel height of amplitude 1
         sampleRate  = 44100,
-        plotTime    = 0.03, // Seconds to plot
+        plotTime    = 0.018, // Seconds to plot
         xscale      = width/(sampleRate*plotTime),
         osc         = new audioLib.Oscillator(sampleRate, 220),
-        distortion  = new audioLib.Distortion(sampleRate);
-    
+        distortion	= new audioLib.Distortion(sampleRate);
+
+	distortion.gain = 10;
+	distortion.master = 2;
+
     // Reference Box, +- 1
     context.strokeStyle="#33FF33";
     context.beginPath();
@@ -70,14 +73,13 @@ window.onload = function(){
     </head>
     <body>
         <h1>Distortion Test</h1>
-       <!--  <p>
+        <p>
             This test shows 2 waveforms:
             <ul>
                 <li>Unmodified sine wave at 220Hz in <span style="color:black;">Black</span></li>
-                <li>Signal mangled with <em>audioLib.BitCrusher</em> (bits = 2) in <span style="color:blue;">Blue</span></li>
+                <li>Signal distorted with <em>audioLib.Distortion</em> (gain = 10, master = 2) in <span style="color:blue;">Blue</span></li>
             </ul>
-            audioLib.BitCrusher(sampleRate, n) reduces the signal resolution to n bits.
-        </p> -->
+        </p>
         <canvas id=c width=1000 height=420></canvas>
     </body>
 </html>
